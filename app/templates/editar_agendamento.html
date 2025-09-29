@@ -3,7 +3,7 @@
 {% block title %}Novo Agendamento{% endblock %}
 
 {% block content %}
-    <h2>Criar Novo Agendamento</h2>
+    <h2>Editar Novo Agendamento</h2>
     <hr>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -55,6 +55,15 @@
                 <div class="form-check me-4">{{ form.transmissao(class="form-check-input") }} {{ form.transmissao.label(class="form-check-label") }}</div>
             </div>
         </fieldset>
+        
+        <div class="mb-3">
+            {{ form.equipe_solicitada.label(class="form-label") }}
+            {{ form.equipe_solicitada(class="form-control", rows=4) }}
+        </div>
+
+    <div class="mt-4">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
 
         <div class="mt-4">
             {{ form.submit(class="btn btn-primary") }}
