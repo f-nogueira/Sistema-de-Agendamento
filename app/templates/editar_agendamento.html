@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Novo Agendamento{% endblock %}
+{% block title %}Editar Agendamento{% endblock %}
 
 {% block content %}
-    <h2>Editar Novo Agendamento</h2>
+    <h2>Editar Agendamento</h2>
     <hr>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -60,10 +60,6 @@
             {{ form.equipe_solicitada.label(class="form-label") }}
             {{ form.equipe_solicitada(class="form-control", rows=4) }}
         </div>
-
-    <div class="mt-4">
-        {{ form.submit(class="btn btn-primary") }}
-    </div>
 
         <div class="mt-4">
             {{ form.submit(class="btn btn-primary") }}

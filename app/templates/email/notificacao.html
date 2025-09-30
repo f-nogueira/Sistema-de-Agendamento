@@ -1,0 +1,15 @@
+<p>Olá, equipe!</p>
+
+<p>Um agendamento foi <b>{{ status_acao }}</b> no sistema.</p>
+
+<p>
+    <b>Evento:</b> {{ agendamento.titulo }}<br>
+    <b>Responsável:</b> {{ agendamento.responsavel }}<br>
+    <b>Início:</b> {{ agendamento.data_inicio.strftime('%d/%m/%Y às %H:%M') }}<br>
+    <b>Fim:</b> {{ agendamento.data_fim.strftime('%d/%m/%Y às %H:%M') }}<br>
+    <b>Status:</b> {{ agendamento.status }}
+</p>
+
+<p>Para mais detalhes, acesse o sistema.</p>
+
+<p><small>Este é um e-mail automático enviado pelo Sistema de Agendamento do Plenário.</small></p>

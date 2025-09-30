@@ -9,10 +9,7 @@
                 <h1>Calendário de Agendamentos do Plenário</h1>
                 <p class="lead">Consulte os eventos confirmados.</p>
             </div>
-            <div>
-                <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary">Acesso Restrito</a>
             </div>
-        </div>
 
         <div id='calendar'></div>
     </div>
@@ -30,6 +27,7 @@
             <hr>
             <p><strong>Descrição:</strong></p>
             <p id="modal-description"></p>
+            <p><strong>Status:</strong> <span id="modal-status"></span></p> {# <-- ADICIONADO AQUI #}
             <hr>
             <p><strong>Local:</strong> <span id="modal-local"></span></p>
             <p><strong>Responsável:</strong> <span id="modal-responsavel"></span></p>
@@ -37,7 +35,7 @@
             <h6>Equipamentos e Serviços Solicitados:</h6>
             <ul id="modal-servicos" class="list-unstyled"></ul>
             <hr>
-            <h6>Equipe Solicitada:</h6>
+            <h6>Equipe:</h6> {# <-- TEXTO ALTERADO AQUI #}
             <div id="modal-equipe"></div>
           </div>
           <div class="modal-footer">
@@ -61,6 +59,12 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
+                buttonText: {
+                    today: 'Hoje',
+                    month: 'Mês',
+                    week: 'Semana',
+                    day: 'Dia'
+                },
                 events: '/api/agendamentos',
                 height: 'auto',
 
@@ -76,6 +80,7 @@
                     document.getElementById('modal-start').textContent = evento.start.toLocaleString('pt-BR', opcoesData);
                     document.getElementById('modal-end').textContent = evento.end.toLocaleString('pt-BR', opcoesData);
                     document.getElementById('modal-description').textContent = props.description;
+                    document.getElementById('modal-status').textContent = props.status; // <-- ADICIONADO AQUI
                     document.getElementById('modal-local').textContent = props.local;
                     document.getElementById('modal-responsavel').textContent = props.responsavel;
 
