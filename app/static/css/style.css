@@ -1,0 +1,14 @@
+/* --- Ajustes para Eventos do Calendário --- */
+
+/* PARTE 1: Faz o texto do título quebrar em várias linhas */
+.fc-event-title {
+    white-space: normal !important;
+    overflow-wrap: break-word;
+    font-size: 0.85em; /* Opcional: diminui um pouco a fonte para caber melhor */
+}
+
+/* PARTE 2: Força TODOS os eventos a se alinharem no topo (com mais especificidade) */
+.fc-daygrid-event-harness .fc-daygrid-event {
+   align-items: flex-start !important; /* Força o alinhamento ao topo */
+   padding-top: 2px;
+}
