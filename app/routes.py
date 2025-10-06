@@ -1,19 +1,20 @@
-# A importação do current_app é necessária para acessar a configuração
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify, current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from app.models import Usuario, Agendamento
 from app.forms import AgendamentoForm
-from app.email import enviar_email_notificacao # Certifique-se que esta linha existe
+# A linha abaixo foi REMOVIDA para evitar a importação circular:
+# from app.email import enviar_email_notificacao 
 from app import db
 
 bp = Blueprint('main', __name__)
 
-# --- (Nenhuma mudança nas rotas index, login, logout, admin_dashboard) ---
+# --- Rota Principal (Redirecionamento) ---
 @bp.route('/')
 @bp.route('/index')
 def index():
     return redirect(url_for('main.calendario_publico'))
 
+# --- Rota de Login ---
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -29,18 +30,20 @@ def login():
         return redirect(url_for('main.admin_dashboard'))
     return render_template('login.html')
 
+# --- Rota de Logout ---
 @bp.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
+# --- Rota Admin Dashboard (CORRIGIDA: Resolve o erro 404) ---
 @bp.route('/admin')
 @login_required
 def admin_dashboard():
     agendamentos = Agendamento.query.order_by(Agendamento.data_inicio.asc()).all()
     return render_template('admin_dashboard.html', agendamentos=agendamentos)
 
-# --- Rota novo_agendamento (ATUALIZADA) ---
+# --- Rota novo_agendamento (Correção do E-mail Mantida) ---
 @bp.route('/agendamento/novo', methods=['GET', 'POST'])
 @login_required
 def novo_agendamento():
@@ -57,9 +60,12 @@ def novo_agendamento():
         )
         db.session.add(agendamento)
         db.session.commit()
+        
+        # 💡 Importação ADICIONADA AQUI para quebrar o ciclo
+        from app.email import enviar_email_notificacao 
+        
         enviar_email_notificacao(
             assunto=f"Novo Agendamento: {agendamento.titulo}",
-            # ATUALIZADO: Usando a lista de e-mails da configuração
             destinatarios=current_app.config['ADMINS'],
             template_html="email/notificacao.html",
             agendamento=agendamento,
@@ -69,7 +75,7 @@ def novo_agendamento():
         return redirect(url_for('main.admin_dashboard'))
     return render_template('criar_agendamento.html', title='Novo Agendamento', form=form)
 
-# --- Rota editar_agendamento (ATUALIZADA) ---
+# --- Rota editar_agendamento (Correção do E-mail Mantida) ---
 @bp.route('/agendamento/editar/<int:agendamento_id>', methods=['GET', 'POST'])
 @login_required
 def editar_agendamento(agendamento_id):
@@ -89,9 +95,12 @@ def editar_agendamento(agendamento_id):
         agendamento.transmissao = form.transmissao.data
         agendamento.equipe_solicitada = form.equipe_solicitada.data
         db.session.commit()
+        
+        # 💡 Importação ADICIONADA AQUI para quebrar o ciclo
+        from app.email import enviar_email_notificacao
+        
         enviar_email_notificacao(
             assunto=f"Agendamento Atualizado: {agendamento.titulo}",
-            # ATUALIZADO: Usando a lista de e-mails da configuração
             destinatarios=current_app.config['ADMINS'],
             template_html="email/notificacao.html",
             agendamento=agendamento,
@@ -114,7 +123,7 @@ def editar_agendamento(agendamento_id):
         form.equipe_solicitada.data = agendamento.equipe_solicitada
     return render_template('editar_agendamento.html', title='Editar Agendamento', form=form)
 
-# --- (Nenhuma mudança nas rotas excluir_agendamento, calendario_publico, api_agendamentos) ---
+# --- Rota excluir_agendamento ---
 @bp.route('/agendamento/excluir/<int:agendamento_id>', methods=['POST'])
 @login_required
 def excluir_agendamento(agendamento_id):
@@ -124,10 +133,12 @@ def excluir_agendamento(agendamento_id):
     flash('Agendamento excluído com sucesso!')
     return redirect(url_for('main.admin_dashboard'))
 
+# --- Rota calendário público ---
 @bp.route('/calendario')
 def calendario_publico():
     return render_template('calendario_publico.html', title="Calendário de Eventos")
 
+# --- Rota API de Agendamentos (para o calendário) ---
 @bp.route('/api/agendamentos')
 def api_agendamentos():
     query = Agendamento.query.all()
