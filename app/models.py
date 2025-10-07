@@ -43,6 +43,7 @@ class Agendamento(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     equipe_solicitada = db.Column(db.Text) # Campo para listar os funcionários
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    mesa_portatil = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<Agendamento {self.titulo}>'

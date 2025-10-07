@@ -5,28 +5,42 @@
 {% block content %}
     <h2>Editar Agendamento</h2>
     <hr>
+    <p class="text-muted"><small><span class="text-danger">*</span> Campos obrigatórios</small></p>
+
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
 
         <div class="row">
             <div class="col-md-8 mb-3">
-                {{ form.titulo.label(class="form-label") }}
-                {{ form.titulo(class="form-control", size=32) }}
+                <label for="titulo" class="form-label">Nome do Evento <span class="text-danger">*</span></label>
+                {{ form.titulo(class="form-control" + (" is-invalid" if form.titulo.errors else ""), size=32) }}
+                {% for error in form.titulo.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="col-md-4 mb-3">
-                {{ form.status.label(class="form-label") }}
-                {{ form.status(class="form-select") }}
+                <label for="status" class="form-label">Status do Evento <span class="text-danger">*</span></label>
+                {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                {% for error in form.status.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                {{ form.data_inicio.label(class="form-label") }}
-                {{ form.data_inicio(class="form-control") }}
+                <label for="data_inicio" class="form-label">Data e Hora de Início <span class="text-danger">*</span></label>
+                {{ form.data_inicio(class="form-control" + (" is-invalid" if form.data_inicio.errors else "")) }}
+                {% for error in form.data_inicio.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="col-md-6 mb-3">
-                {{ form.data_fim.label(class="form-label") }}
-                {{ form.data_fim(class="form-control") }}
+                <label for="data_fim" class="form-label">Data e Hora de Fim <span class="text-danger">*</span></label>
+                {{ form.data_fim(class="form-control" + (" is-invalid" if form.data_fim.errors else "")) }}
+                {% for error in form.data_fim.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
         </div>
 
@@ -37,12 +51,18 @@
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                {{ form.local.label(class="form-label") }}
-                {{ form.local(class="form-control") }}
+                <label for="local" class="form-label">Local do Evento <span class="text-danger">*</span></label>
+                {{ form.local(class="form-control" + (" is-invalid" if form.local.errors else "")) }}
+                {% for error in form.local.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="col-md-6 mb-3">
-                {{ form.responsavel.label(class="form-label") }}
-                {{ form.responsavel(class="form-control") }}
+                <label for="responsavel" class="form-label">Responsável pelo Evento <span class="text-danger">*</span></label>
+                {{ form.responsavel(class="form-control" + (" is-invalid" if form.responsavel.errors else "")) }}
+                {% for error in form.responsavel.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
             </div>
         </div>
 
@@ -53,6 +73,8 @@
                 <div class="form-check me-4">{{ form.gravacao(class="form-check-input") }} {{ form.gravacao.label(class="form-check-label") }}</div>
                 <div class="form-check me-4">{{ form.uso_som(class="form-check-input") }} {{ form.uso_som.label(class="form-check-label") }}</div>
                 <div class="form-check me-4">{{ form.transmissao(class="form-check-input") }} {{ form.transmissao.label(class="form-check-label") }}</div>
+                <div class="form-check me-4">{{ form.mesa_portatil.label(class="form-check-label") }} {{ form.mesa_portatil(class="form-check-input") }}</div>
+
             </div>
         </fieldset>
         
