@@ -12,3 +12,9 @@
    align-items: flex-start !important; /* Força o alinhamento ao topo */
    padding-top: 2px;
 }
+
+.list-group-item p {
+    overflow-wrap: break-word;
+    word-wrap: break-word; /* Para compatibilidade com navegadores mais antigos */
+    word-break: break-word;
+}

@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, DateTimeLocalField, SelectField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, ValidationError
+from wtforms import StringField, TextAreaField, DateTimeLocalField, SelectField, BooleanField, SubmitField, PasswordField
+from wtforms.validators import DataRequired, ValidationError, EqualTo
 from app.models import Agendamento
+from app.models import Usuario
 from app import db # Importação importante
 
 class AgendamentoForm(FlaskForm):
@@ -57,3 +58,16 @@ class AgendamentoForm(FlaskForm):
                 # Se estamos criando (id is None) OU editando e o conflito NÃO é o próprio agendamento
                 if self.agendamento_id is None or conflito.id != self.agendamento_id:
                     raise ValidationError(f'Conflito! Já existe o evento "{conflito.titulo}" neste local e período.')
+
+
+class UserCreationForm(FlaskForm):
+    nome_usuario = StringField('Nome de Usuário', validators=[DataRequired('Este campo é obrigatório.')])
+    senha = PasswordField('Senha', validators=[DataRequired('Este campo é obrigatório.')])
+    senha2 = PasswordField('Repita a Senha', validators=[DataRequired(), EqualTo('senha', message='As senhas devem ser iguais.')])
+    role = SelectField('Cargo', choices=[('user', 'Usuário'), ('admin', 'Administrador')], validators=[DataRequired()])
+    submit = SubmitField('Criar Usuário')
+
+    def validate_nome_usuario(self, nome_usuario):
+        user = Usuario.query.filter_by(nome_usuario=nome_usuario.data).first()
+        if user is not None:
+            raise ValidationError('Este nome de usuário já existe. Por favor, escolha outro.')

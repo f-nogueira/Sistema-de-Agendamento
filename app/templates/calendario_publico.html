@@ -27,7 +27,7 @@
             <hr>
             <p><strong>Descrição:</strong></p>
             <p id="modal-description"></p>
-            <p><strong>Status:</strong> <span id="modal-status"></span></p> {# <-- ADICIONADO AQUI #}
+            <p><strong>Status:</strong> <span id="modal-status"></span></p>
             <hr>
             <p><strong>Local:</strong> <span id="modal-local"></span></p>
             <p><strong>Responsável:</strong> <span id="modal-responsavel"></span></p>
@@ -35,7 +35,7 @@
             <h6>Equipamentos e Serviços Solicitados:</h6>
             <ul id="modal-servicos" class="list-unstyled"></ul>
             <hr>
-            <h6>Equipe:</h6> {# <-- TEXTO ALTERADO AQUI #}
+            <h6>Equipe:</h6>
             <div id="modal-equipe"></div>
           </div>
           <div class="modal-footer">
@@ -65,8 +65,23 @@
                     week: 'Semana',
                     day: 'Dia'
                 },
-                events: '/api/agendamentos',
                 height: 'auto',
+
+                // --- MUDANÇA 1 (DIAGNÓSTICO) ---
+                // Alteramos como os eventos são carregados para adicionar um log
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    fetch('/api/agendamentos')
+                        .then(response => response.json())
+                        .then(data => {
+                            // Esta linha vai imprimir os dados no console do navegador
+                            console.log("Eventos recebidos da API:", data);
+                            successCallback(data);
+                        })
+                        .catch(error => {
+                            console.error("Erro ao buscar eventos:", error);
+                            failureCallback(error);
+                        });
+                },
 
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
@@ -74,26 +89,32 @@
                     let evento = info.event;
                     let props = evento.extendedProps;
                     
+                    // Formatação de data
                     const opcoesData = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
 
+                    // Preenche o modal com os dados do evento
                     document.getElementById('modal-title').textContent = evento.title;
-                    document.getElementById('modal-start').textContent = evento.start.toLocaleString('pt-BR', opcoesData);
-                    document.getElementById('modal-end').textContent = evento.end.toLocaleString('pt-BR', opcoesData);
+                    document.getElementById('modal-start').textContent = evento.start ? evento.start.toLocaleString('pt-BR', opcoesData) : 'Não definido';
+                    document.getElementById('modal-end').textContent = evento.end ? evento.end.toLocaleString('pt-BR', opcoesData) : 'Não definido';
                     document.getElementById('modal-description').textContent = props.description;
-                    document.getElementById('modal-status').textContent = props.status; // <-- ADICIONADO AQUI
+                    document.getElementById('modal-status').textContent = props.status;
                     document.getElementById('modal-local').textContent = props.local;
                     document.getElementById('modal-responsavel').textContent = props.responsavel;
 
+                    // Lógica para preencher a lista de serviços
                     const servicosLista = document.getElementById('modal-servicos');
-                    servicosLista.innerHTML = '';
-
+                    servicosLista.innerHTML = ''; // Limpa a lista
                     if (props.uso_telao) servicosLista.innerHTML += '<li><i class="bi bi-check-circle-fill text-success"></i> Utilização de Telão</li>';
                     if (props.gravacao) servicosLista.innerHTML += '<li><i class="bi bi-check-circle-fill text-success"></i> Gravação do Evento</li>';
                     if (props.uso_som) servicosLista.innerHTML += '<li><i class="bi bi-check-circle-fill text-success"></i> Utilização de Sistema de Som</li>';
                     if (props.transmissao) servicosLista.innerHTML += '<li><i class="bi bi-check-circle-fill text-success"></i> Transmissão do Evento</li>';
+                    
+                    // --- MUDANÇA 2 (CORREÇÃO) ---
+                    // Adicionamos a verificação para "Mesa Portátil"
+                    if (props.mesa_portatil) servicosLista.innerHTML += '<li><i class="bi bi-check-circle-fill text-success"></i> Mesa Portátil</li>';
 
+                    // Lógica para a equipe
                     const equipeDiv = document.getElementById('modal-equipe');
-                    equipeDiv.innerHTML = '';
                     if (props.equipe_solicitada && props.equipe_solicitada.trim() !== '') {
                         const nomes = props.equipe_solicitada.split('\n').filter(nome => nome.trim() !== '');
                         let listaHtml = '<ul class="list-unstyled">';
@@ -106,6 +127,7 @@
                         equipeDiv.innerHTML = '<p>Nenhuma equipe designada.</p>';
                     }
 
+                    // Mostra o modal
                     var eventoModal = new bootstrap.Modal(document.getElementById('eventoModal'));
                     eventoModal.show();
                 }
@@ -114,4 +136,4 @@
             calendar.render();
         });
     </script>
-{% endblock %}
+    {% endblock %}

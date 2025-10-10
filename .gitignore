@@ -1,0 +1,16 @@
+# Ambiente Virtual do Python
+venv/
+
+# Arquivos de cache do Python
+__pycache__/
+*.pyc
+
+# Banco de dados local (para não enviar os dados de teste)
+app.db
+instance/
+
+# Arquivos de ambiente com senhas e segredos
+.env
+
+# Arquivos de migração de banco de dados específicos do sistema
+migrations/

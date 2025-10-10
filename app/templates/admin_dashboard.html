@@ -20,7 +20,14 @@
             <p class="lead">Este é o seu painel de administração. A partir daqui você pode gerenciar os agendamentos.</p>
         </div>
         <div>
-            <a href="{{ url_for('main.novo_agendamento') }}" class="btn btn-primary">Criar Novo Agendamento</a>
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('main.lista_usuarios') }}" class="btn btn-info">
+                <i class="bi bi-people-fill"></i> Gerenciar Usuários
+            </a>
+            {% endif %}
+            <a href="{{ url_for('main.novo_agendamento') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Criar Novo Agendamento
+            </a>
         </div>
     </div>
 
@@ -34,15 +41,18 @@
                         <h5 class="mb-1">{{ agendamento.titulo }}</h5>
                         <div>
                             <a href="{{ url_for('main.editar_agendamento', agendamento_id=agendamento.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+                            
+                            {% if current_user.is_admin %}
                             <form action="{{ url_for('main.excluir_agendamento', agendamento_id=agendamento.id) }}" method="POST" style="display: inline;">
                                 <button type="submit" class="btn btn-danger btn-sm" 
                                         onclick="return confirm('Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.');">
                                     Excluir
                                 </button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
-                    <p class="mb-1">{{ agendamento.descricao or "Nenhuma descrição fornecida." }}</p>
+                    <p class="mb-1" style="overflow-wrap: break-word;">{{ agendamento.descricao or "Nenhuma descrição fornecida." }}</p>
                     <small>
                         <strong>Início:</strong> {{ agendamento.data_inicio.strftime('%d/%m/%Y às %H:%M') }} | 
                         <strong>Fim:</strong> {{ agendamento.data_fim.strftime('%d/%m/%Y às %H:%M') }}
@@ -50,11 +60,12 @@
                     <br>
                     <small><strong>Responsável:</strong> {{ agendamento.responsavel }} | <strong>Status:</strong> {{ agendamento.status }}</small>
                 </div>
+            
             {% else %}
                 <div class="list-group-item">
                     <p class="mb-1">Nenhum agendamento cadastrado ainda.</p>
                 </div>
             {% endfor %}
-        </div>
+            </div>
     </div>
 {% endblock %}

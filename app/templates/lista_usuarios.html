@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Gestão de Usuários</h2>
+        <a href="{{ url_for('main.criar_usuario') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Criar Novo Usuário
+        </a>
+    </div>
+    <hr>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome de Usuário</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.nome_usuario }}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" disabled>Editar</button>
+                    <button class="btn btn-sm btn-danger" disabled>Excluir</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

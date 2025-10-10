@@ -1,9 +1,7 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify, current_app
+from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify, current_app, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from app.models import Usuario, Agendamento
-from app.forms import AgendamentoForm
-# A linha abaixo foi REMOVIDA para evitar a importação circular:
-# from app.email import enviar_email_notificacao 
+from app.forms import AgendamentoForm, UserCreationForm
 from app import db
 
 bp = Blueprint('main', __name__)
@@ -36,14 +34,14 @@ def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
-# --- Rota Admin Dashboard (CORRIGIDA: Resolve o erro 404) ---
+# --- Rota Admin Dashboard ---
 @bp.route('/admin')
 @login_required
 def admin_dashboard():
     agendamentos = Agendamento.query.order_by(Agendamento.data_inicio.asc()).all()
     return render_template('admin_dashboard.html', agendamentos=agendamentos)
 
-# --- Rota novo_agendamento (Correção do E-mail Mantida) ---
+# --- Rota novo_agendamento ---
 @bp.route('/agendamento/novo', methods=['GET', 'POST'])
 @login_required
 def novo_agendamento():
@@ -60,22 +58,11 @@ def novo_agendamento():
         )
         db.session.add(agendamento)
         db.session.commit()
-        
-        # 💡 Importação ADICIONADA AQUI para quebrar o ciclo
-        from app.email import enviar_email_notificacao 
-        
-        enviar_email_notificacao(
-            assunto=f"Novo Agendamento: {agendamento.titulo}",
-            destinatarios=current_app.config['ADMINS'],
-            template_html="email/notificacao.html",
-            agendamento=agendamento,
-            status_acao="criado"
-        )
         flash('Agendamento criado com sucesso!')
         return redirect(url_for('main.admin_dashboard'))
     return render_template('criar_agendamento.html', title='Novo Agendamento', form=form)
 
-# --- Rota editar_agendamento (Correção do E-mail Mantida) ---
+# --- Rota editar_agendamento ---
 @bp.route('/agendamento/editar/<int:agendamento_id>', methods=['GET', 'POST'])
 @login_required
 def editar_agendamento(agendamento_id):
@@ -95,17 +82,6 @@ def editar_agendamento(agendamento_id):
         agendamento.transmissao = form.transmissao.data
         agendamento.equipe_solicitada = form.equipe_solicitada.data
         db.session.commit()
-        
-        # 💡 Importação ADICIONADA AQUI para quebrar o ciclo
-        from app.email import enviar_email_notificacao
-        
-        enviar_email_notificacao(
-            assunto=f"Agendamento Atualizado: {agendamento.titulo}",
-            destinatarios=current_app.config['ADMINS'],
-            template_html="email/notificacao.html",
-            agendamento=agendamento,
-            status_acao="atualizado"
-        )
         flash('Agendamento atualizado com sucesso!')
         return redirect(url_for('main.admin_dashboard'))
     elif request.method == 'GET':
@@ -127,6 +103,8 @@ def editar_agendamento(agendamento_id):
 @bp.route('/agendamento/excluir/<int:agendamento_id>', methods=['POST'])
 @login_required
 def excluir_agendamento(agendamento_id):
+    if not current_user.is_admin:
+        abort(403)
     agendamento_para_excluir = Agendamento.query.get_or_404(agendamento_id)
     db.session.delete(agendamento_para_excluir)
     db.session.commit()
@@ -138,7 +116,33 @@ def excluir_agendamento(agendamento_id):
 def calendario_publico():
     return render_template('calendario_publico.html', title="Calendário de Eventos")
 
-# --- Rota API de Agendamentos (para o calendário) ---
+# --- ROTA PARA LISTAR USUÁRIOS ---
+@bp.route('/admin/usuarios')
+@login_required
+def lista_usuarios():
+    if not current_user.is_admin:
+        abort(403) # Proibido
+    users = Usuario.query.all()
+    return render_template('lista_usuarios.html', users=users, title="Gestão de Usuários")
+
+# --- ROTA PARA CRIAR UM NOVO USUÁRIO ---
+@bp.route('/admin/criar_usuario', methods=['GET', 'POST'])
+@login_required
+def criar_usuario():
+    if not current_user.is_admin:
+        abort(403) # Proibido
+    form = UserCreationForm()
+    if form.validate_on_submit():
+        user = Usuario(nome_usuario=form.nome_usuario.data, role=form.role.data)
+        user.set_senha(form.senha.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Usuário criado com sucesso!')
+        return redirect(url_for('main.lista_usuarios'))
+    return render_template('criar_usuario.html', title='Criar Novo Usuário', form=form)
+
+# --- INÍCIO DA CORREÇÃO ---
+# Rota API de Agendamentos (VERSÃO COMPLETA)
 @bp.route('/api/agendamentos')
 def api_agendamentos():
     query = Agendamento.query.all()
@@ -146,11 +150,12 @@ def api_agendamentos():
     for agendamento in query:
         cor = ''
         if agendamento.status == 'Confirmado':
-            cor = "#0dfd21"
+            cor = "#28a745" # Verde
         elif agendamento.status == 'Pendente':
-            cor = '#ffc107'
+            cor = '#ffc107' # Amarelo
         elif agendamento.status == 'Cancelado':
-            cor = "#ff0000"
+            cor = "#dc3545" # Vermelho
+        
         eventos.append({
             'title': agendamento.titulo,
             'start': agendamento.data_inicio.isoformat(),
@@ -165,7 +170,9 @@ def api_agendamentos():
                 'gravacao': agendamento.gravacao,
                 'uso_som': agendamento.uso_som,
                 'transmissao': agendamento.transmissao,
-                'equipe_solicitada': agendamento.equipe_solicitada or ''
+                'mesa_portatil': agendamento.mesa_portatil,
+                'equipe_solicitada': agendamento.equipe_solicitada or 'Nenhuma equipe designada.'
             }
         })
     return jsonify(eventos)
+# --- FIM DA CORREÇÃO ---

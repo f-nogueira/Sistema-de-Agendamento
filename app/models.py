@@ -3,9 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime
 
-# <<< --- A FUNÇÃO ESSENCIAL QUE ESTAVA FALTANDO ---
 # Esta função diz ao Flask-Login como encontrar um usuário a partir do ID
-# que ele guarda no cookie de sessão do navegador.
 @login_manager.user_loader
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
@@ -16,6 +14,16 @@ class Usuario(UserMixin, db.Model):
     nome_usuario = db.Column(db.String(64), index=True, unique=True)
     senha_hash = db.Column(db.String(128))
     agendamentos = db.relationship('Agendamento', backref='autor', lazy='dynamic')
+
+    # --- INÍCIO DA ALTERAÇÃO ---
+    # Adiciona o campo de "cargo" com 'user' como padrão
+    role = db.Column(db.String(20), index=True, default='user')
+
+    # Propriedade para verificar facilmente se o usuário é admin
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+    # --- FIM DA ALTERAÇÃO ---
 
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
@@ -40,8 +48,7 @@ class Agendamento(db.Model):
     gravacao = db.Column(db.Boolean, default=False)
     uso_som = db.Column(db.Boolean, default=False)
     transmissao = db.Column(db.Boolean, default=False)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
-    equipe_solicitada = db.Column(db.Text) # Campo para listar os funcionários
+    equipe_solicitada = db.Column(db.Text)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     mesa_portatil = db.Column(db.Boolean, default=False)
 

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Criar Novo Usuário</h2>
+    <hr>
+    <div class="row">
+        <div class="col-md-6">
+            <form action="" method="post" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <label for="nome_usuario" class="form-label">Nome de Usuário <span class="text-danger">*</span></label>
+                    {{ form.nome_usuario(class="form-control" + (" is-invalid" if form.nome_usuario.errors else ""), size=32) }}
+                    {% for error in form.nome_usuario.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Cargo <span class="text-danger">*</span></label>
+                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                    {% for error in form.role.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Senha <span class="text-danger">*</span></label>
+                    {{ form.senha(class="form-control" + (" is-invalid" if form.senha.errors else ""), size=32) }}
+                    {% for error in form.senha.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label for="senha2" class="form-label">Repita a Senha <span class="text-danger">*</span></label>
+                    {{ form.senha2(class="form-control" + (" is-invalid" if form.senha2.errors else ""), size=32) }}
+                    {% for error in form.senha2.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="{{ url_for('main.lista_usuarios') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
