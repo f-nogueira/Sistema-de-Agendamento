@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify, current_app, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from app.models import Usuario, Agendamento
-from app.forms import AgendamentoForm, UserCreationForm
+from app.forms import AgendamentoForm, UserCreationForm, UserEditForm
 from app import db
 
 bp = Blueprint('main', __name__)
@@ -175,4 +175,49 @@ def api_agendamentos():
             }
         })
     return jsonify(eventos)
-# --- FIM DA CORREÇÃO ---
+
+# --- ROTA PARA EDITAR UM USUÁRIO ---
+@bp.route('/admin/editar_usuario/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def editar_usuario(user_id):
+    if not current_user.is_admin:
+        abort(403)
+
+    user = Usuario.query.get_or_404(user_id)
+    form = UserEditForm(original_username=user.nome_usuario)
+
+    if form.validate_on_submit():
+        user.nome_usuario = form.nome_usuario.data
+        user.role = form.role.data
+        # Só atualiza a senha se um novo valor for digitado
+        if form.senha.data:
+            user.set_senha(form.senha.data)
+        db.session.commit()
+        flash('Usuário atualizado com sucesso!')
+        return redirect(url_for('main.lista_usuarios'))
+    elif request.method == 'GET':
+        form.nome_usuario.data = user.nome_usuario
+
+    return render_template('editar_usuario.html', title='Editar Usuário', form=form, user=user)
+
+# --- ROTA PARA ATIVAR/INATIVAR UM USUÁRIO (Soft Delete) ---
+@bp.route('/admin/toggle_status/<int:user_id>', methods=['POST'])
+@login_required
+def toggle_user_status(user_id):
+    if not current_user.is_admin:
+        abort(403)
+
+    user_to_toggle = Usuario.query.get_or_404(user_id)
+
+    # Regra de segurança: um admin não pode inativar a si mesmo
+    if user_to_toggle.id == current_user.id:
+        flash('Você não pode alterar o status da sua própria conta.', 'danger')
+        return redirect(url_for('main.lista_usuarios'))
+
+    # Inverte o status atual
+    user_to_toggle.is_active = not user_to_toggle.is_active
+    db.session.commit()
+
+    status_text = "ativado" if user_to_toggle.is_active else "inativado"
+    flash(f'Usuário {user_to_toggle.nome_usuario} foi {status_text} com sucesso.')
+    return redirect(url_for('main.lista_usuarios'))

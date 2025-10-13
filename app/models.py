@@ -14,16 +14,14 @@ class Usuario(UserMixin, db.Model):
     nome_usuario = db.Column(db.String(64), index=True, unique=True)
     senha_hash = db.Column(db.String(128))
     agendamentos = db.relationship('Agendamento', backref='autor', lazy='dynamic')
-
-    # --- INÍCIO DA ALTERAÇÃO ---
-    # Adiciona o campo de "cargo" com 'user' como padrão
     role = db.Column(db.String(20), index=True, default='user')
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     # Propriedade para verificar facilmente se o usuário é admin
     @property
     def is_admin(self):
         return self.role == 'admin'
-    # --- FIM DA ALTERAÇÃO ---
+    
 
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
@@ -54,3 +52,4 @@ class Agendamento(db.Model):
 
     def __repr__(self):
         return f'<Agendamento {self.titulo}>'
+    

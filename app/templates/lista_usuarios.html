@@ -8,22 +8,49 @@
         </a>
     </div>
     <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category or 'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Nome de Usuário</th>
+                <th>Cargo</th>
+                <th>Status</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
+            <tr class="{{ 'table-secondary text-muted' if not user.is_active }}">
                 <td>{{ user.nome_usuario }}</td>
+                <td><span class="badge bg-secondary">{{ user.role }}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" disabled>Editar</button>
-                    <button class="btn btn-sm btn-danger" disabled>Excluir</button>
+                    {% if user.is_active %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inativo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('main.editar_usuario', user_id=user.id) }}" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-pencil-fill"></i> Editar
+                    </a>
+                    <form action="{{ url_for('main.toggle_user_status', user_id=user.id) }}" method="POST" style="display: inline;">
+                        {% if user.is_active %}
+                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Tem certeza que deseja INATIVAR este usuário?');">
+                                <i class="bi bi-person-x-fill"></i> Inativar
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Tem certeza que deseja ATIVAR este usuário?');">
+                                <i class="bi bi-person-check-fill"></i> Ativar
+                            </button>
+                        {% endif %}
+                    </form>
                 </td>
             </tr>
             {% endfor %}

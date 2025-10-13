@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, DateTimeLocalField, SelectField, BooleanField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, ValidationError, EqualTo
+from wtforms.validators import DataRequired, ValidationError, EqualTo, Optional
 from app.models import Agendamento
 from app.models import Usuario
 from app import db # Importação importante
@@ -71,3 +71,21 @@ class UserCreationForm(FlaskForm):
         user = Usuario.query.filter_by(nome_usuario=nome_usuario.data).first()
         if user is not None:
             raise ValidationError('Este nome de usuário já existe. Por favor, escolha outro.')
+        
+class UserEditForm(FlaskForm):
+    nome_usuario = StringField('Nome de Usuário', validators=[DataRequired('Este campo é obrigatório.')])
+    role = SelectField('Cargo', choices=[('user', 'Usuário'), ('admin', 'Administrador')], validators=[DataRequired()])
+    # A senha agora é opcional. Se deixada em branco, não será alterada.
+    senha = PasswordField('Nova Senha', validators=[Optional(), EqualTo('senha2', message='As senhas devem ser iguais.')])
+    senha2 = PasswordField('Repita a Nova Senha')
+    submit = SubmitField('Salvar Alterações')
+
+    def __init__(self, original_username, *args, **kwargs):
+        super(UserEditForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    def validate_nome_usuario(self, nome_usuario):
+        if nome_usuario.data != self.original_username:
+            user = Usuario.query.filter_by(nome_usuario=self.nome_usuario.data).first()
+            if user is not None:
+                raise ValidationError('Este nome de usuário já está em uso. Por favor, escolha outro.')
