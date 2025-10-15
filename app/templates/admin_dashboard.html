@@ -58,8 +58,20 @@
                         <strong>Fim:</strong> {{ agendamento.data_fim.strftime('%d/%m/%Y às %H:%M') }}
                     </small>
                     <br>
-                    <small><strong>Responsável:</strong> {{ agendamento.responsavel }} | <strong>Status:</strong> {{ agendamento.status }}</small>
-                </div>
+                    
+                    <small>
+                        <strong>Responsável:</strong> {{ agendamento.responsavel }} | <strong>Status:</strong>
+                        {% if agendamento.status == 'Confirmado' %}
+                            <span class="badge bg-success">Confirmado</span>
+                        {% elif agendamento.status == 'Pendente' %}
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                        {% elif agendamento.status == 'Cancelado' %}
+                            <span class="badge bg-danger">Cancelado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ agendamento.status }}</span>
+                        {% endif %}
+                    </small>
+                    </div>
             
             {% else %}
                 <div class="list-group-item">
